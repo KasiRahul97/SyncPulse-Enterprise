@@ -1,0 +1,88 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: syncpulse-backend
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+  cassandra:
+    contact-points: ${CASSANDRA_HOST:localhost}
+    port: ${CASSANDRA_PORT:9042}
+    local-datacenter: ${CASSANDRA_DATACENTER:datacenter1}
+    # No keyspace bound at the session level: the SchemaInitializer creates the
+    # keyspace on startup (self-sufficient even without the init container), and
+    # all statements are fully qualified with the keyspace name.
+    schema-action: none
+    request:
+      timeout: 10s
+      consistency: local_one   # single-node dev; use local_quorum on a real cluster
+    connection:
+      connect-timeout: 20s
+      init-query-timeout: 20s
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 3s
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      properties:
+        delivery.timeout.ms: 8000
+        request.timeout.ms: 5000
+        max.block.ms: 5000
+
+syncpulse:
+  cdc:
+    mode: ${SYNCPULSE_CDC_MODE:local}          # local | debezium
+  kafka:
+    topic: ${KAFKA_TOPIC:syncpulse.playhead.changes}
+  debounce:
+    position-threshold-seconds: ${DEBOUNCE_POSITION_THRESHOLD:5}
+    time-threshold-seconds: ${DEBOUNCE_TIME_THRESHOLD:10}
+    state-ttl-seconds: 86400
+  idempotency:
+    ttl-seconds: 3600
+  seed:
+    enabled: ${SYNCPULSE_SEED_ENABLED:true}
+  cassandra:
+    keyspace: ${CASSANDRA_KEYSPACE:syncpulse}
+    replication-factor: ${CASSANDRA_REPLICATION_FACTOR:1}
+  cors:
+    allowed-origins: ${SYNCPULSE_CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    com.syncpulse: INFO
+    org.apache.kafka: WARN
+    com.datastax.oss.driver: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId}] %logger{36} - %msg%n"

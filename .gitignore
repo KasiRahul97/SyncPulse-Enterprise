@@ -1,0 +1,41 @@
+# Env
+.env
+
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+hs_err_pid*
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.egg-info/
+
+# TypeScript build info
+*.tsbuildinfo

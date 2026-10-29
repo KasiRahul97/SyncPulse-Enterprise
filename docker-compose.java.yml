@@ -1,0 +1,16 @@
+# ============================================================================
+# Overlay that runs the Java (Spring Boot) backend + consumer instead of the
+# default Python (FastAPI) implementation. The API contract is identical.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.java.yml up --build
+# ============================================================================
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+  consumer:
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
